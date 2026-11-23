@@ -134,6 +134,25 @@ function start(starImg,planetImg){
     return s;
   }
   renderStar(0);
+
+  // ---------- 행성 자전: 목성 사진도 같은 방식으로 구면에 입혀 돌린다 ----------
+  const PN=256,PR=PN/2-1,PCc=PN/2;
+  const pSrcCv=document.createElement('canvas');pSrcCv.width=pSrcCv.height=PN;const pSx=pSrcCv.getContext('2d',{willReadFrequently:true});pSx.drawImage(planetImg,0,0,PN,PN);
+  const PSRC=pSx.getImageData(0,0,PN,PN).data;
+  const planetCv=document.createElement('canvas');planetCv.width=planetCv.height=PN;const pOx=planetCv.getContext('2d');const POUT=pOx.createImageData(PN,PN);
+  let prot=0;
+  function renderPlanet(rot){
+    const o=POUT.data,RR=0.93;
+    for(let j=0;j<PN;j++){const v=(j+.5-PCc)/PR/RR,sv=1-v*v;
+      for(let i=0;i<PN;i++){const q=(j*PN+i)*4,u=(i+.5-PCc)/PR/RR,r2=u*u+v*v;
+        if(r2>=1){o[q]=PSRC[q];o[q+1]=PSRC[q+1];o[q+2]=PSRC[q+2];o[q+3]=PSRC[q+3];continue;}
+        const s=Math.sqrt(sv),lam=Math.asin(Math.max(-1,Math.min(1,u/s))),m=(((lam+rot+LL)%(2*LL))+2*LL)%(2*LL),a=m-LL,d=Math.min(m,2*LL-m);
+        const alt=m<EE?a+2*LL:(2*LL-m<EE?a-2*LL:null),wp=alt===null?1:.5+.5*d/EE,w=Math.min(1,(1-Math.sqrt(r2))/0.08);
+        const smp=(l,c)=>{const xs=Math.sin(l)*s*RR*PR+PCc-.5;let x0=Math.floor(xs);const fx=xs-x0;if(x0<0)x0=0;if(x0>PN-2)x0=PN-2;const a0=(j*PN+x0)*4;return PSRC[a0+c]*(1-fx)+PSRC[a0+4+c]*fx;};
+        for(let c=0;c<4;c++){let tv=smp(a,c);if(alt!==null)tv=tv*wp+smp(alt,c)*(1-wp);o[q+c]=tv*w+PSRC[q+c]*(1-w);}}}
+    pOx.putImageData(POUT,0,0);
+  }
+  renderPlanet(0);
   const F0=measure(0,0,0,false);
   let rot=0,spinRPM=3,Fb=F0;                        // Fb: 지금 자전 각도에서 행성이 없을 때 별의 밝기(기준 100%)
 
@@ -162,7 +181,7 @@ function start(starImg,planetImg){
     c.clearRect(0,0,SW,SH);
     const hide=!g.front&&Math.hypot(g.x,g.y)<1+k;
     const planet=()=>{ // 목성 사진
-      const r=Math.max(pr,0.01);c.save();c.shadowColor='rgba(255,228,190,.55)';c.shadowBlur=16;c.drawImage(planetImg,pxs-r,pys-r,2*r,2*r);c.restore();
+      const r=Math.max(pr,0.01);c.save();c.shadowColor='rgba(255,228,190,.55)';c.shadowBlur=16;c.drawImage(planetCv,pxs-r,pys-r,2*r,2*r);c.restore();
       if(pr<4.5){c.strokeStyle='rgba(94,234,212,.95)';c.lineWidth=1.6;c.beginPath();c.arc(pxs,pys,9,0,6.2832);c.stroke();}
       if(dragging){c.strokeStyle='rgba(255,180,84,.95)';c.lineWidth=2;c.beginPath();c.arc(pxs,pys,Math.max(pr+5,12),0,6.2832);c.stroke();}};
     c.lineWidth=1.4;c.setLineDash([5,7]);
@@ -196,7 +215,7 @@ function start(starImg,planetImg){
     const eg=c.createRadialGradient(bx+12,cy-3,1,bx+14,cy,8);eg.addColorStop(0,'#9be0ff');eg.addColorStop(1,'#2a6fd6');c.fillStyle=eg;c.beginPath();c.arc(bx+14,cy,7,0,6.2832);c.fill();
     // 행성 (지금 위치)
     const d=A*Math.cos(phi(ph)),pr=Math.max(k*R,3.2);
-    c.drawImage(planetImg,cx+ux*d*R-pr,cy+uy*d*R-pr,2*pr,2*pr);
+    c.drawImage(planetCv,cx+ux*d*R-pr,cy+uy*d*R-pr,2*pr,2*pr);
     // 판정 표시
     c.font='700 24px '+FF;c.textAlign='right';c.fillStyle=hit?'#5eead4':'#ff8080';c.fillText(hit?'✓':'✕',bx+bw-10,by+28);
     c.restore();
@@ -263,6 +282,7 @@ function start(starImg,planetImg){
   function loop(now){
     const dt=Math.min(.1,(now-last)/1000);last=now;
     try{
+      prot=(prot+dt*10/60*2*Math.PI)%(2*Math.PI);renderPlanet(prot);
       if(spinRPM>0){rot=(rot+dt*spinRPM/60*2*Math.PI)%(2*Math.PI);renderStar(rot);Fb=measure(0,0,0,false);}
       if(playing){const n=(ph+dt*speed/9)%1;bump(ph,n);ph=n;}
       const g=geom(ph);

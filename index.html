@@ -27,9 +27,39 @@ button:hover{border-color:var(--amber)}button.on{background:var(--amber);color:#
 input[type=range]{accent-color:var(--amber);width:150px}
 .dot{display:inline-block;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e9c9a0,#a8714a 60%,#5a3a26)}
 </style>
+<style id="skin">
+:root{--ink:#f1ede4;--dim:#b9bdc9;--amber:#ffd27a;--teal:#7fd6c8;--line:rgba(235,228,214,.26)}
+html,body{background-color:#05060b}
+body{background-color:#05060b;background-size:cover;background-position:center}
+body::before{background:radial-gradient(100% 100% at 42% 45%,rgba(3,8,24,0) 45%,rgba(3,6,18,.5) 100%)!important}
+canvas{border-radius:10px!important}
+#graph,#bar{background:rgba(7,9,16,.80)!important;backdrop-filter:blur(6px)!important;border:1px solid var(--line)!important;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#bar{border-radius:12px!important}
+button{background:rgba(255,255,255,.05)!important;border:1px solid var(--line)!important;border-radius:8px!important;color:var(--ink)!important;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--amber)!important;background:rgba(255,255,255,.1)!important}
+button.on{background:var(--amber)!important;color:#1b1407!important;border-color:var(--amber)!important}
+.g b{color:var(--amber)!important;font-weight:400!important}
+.sep{background:rgba(235,228,214,.18)!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:20px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:rgba(235,228,214,.3)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-5.5px;border-radius:50%;background:#f1ede4;border:2px solid #0b0d15;box-shadow:0 0 0 1px rgba(235,228,214,.6)}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:rgba(235,228,214,.3)}
+input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:#f1ede4;border:2px solid #0b0d15}
+#credit{position:absolute;left:20px;right:20px;bottom:0;height:14px;line-height:14px;text-align:center;font-size:13px;font-weight:500;letter-spacing:.01em;color:rgba(244,240,230,.95);text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+body::before{background:radial-gradient(70% 60% at 85% 12%,rgba(120,90,255,.16),rgba(120,90,255,0) 70%),radial-gradient(60% 55% at 8% 95%,rgba(40,200,210,.14),rgba(40,200,210,0) 70%),radial-gradient(100% 100% at 42% 45%,rgba(3,8,24,0) 45%,rgba(3,6,18,.5) 100%)!important}
+#graph,#bar{background:linear-gradient(160deg,rgba(18,22,44,.88),rgba(7,9,20,.88))!important;border:1px solid rgba(235,228,214,.22)!important;box-shadow:0 12px 34px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.09)!important}
+button.on{background:linear-gradient(135deg,#ffe6a6,#ffb88a)!important;border-color:transparent!important;color:#2a1608!important;box-shadow:0 0 14px rgba(255,200,130,.35)}
+button:hover{box-shadow:0 0 12px rgba(125,249,255,.25)}
+input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(90deg,#7df9ff 0,#ffd27a var(--p,50%),rgba(235,228,214,.28) var(--p,50%))!important}
+input[type=range]::-moz-range-track{background:rgba(235,228,214,.28)!important}
+input[type=range]::-moz-range-progress{height:3px;border-radius:2px;background:linear-gradient(90deg,#7df9ff,#ffd27a)}
+input[type=range]::-webkit-slider-thumb{box-shadow:0 0 0 1px rgba(255,255,255,.7),0 0 10px rgba(125,249,255,.55)!important}
+.g b{text-shadow:0 0 12px rgba(255,210,122,.25)}
+</style>
 </head>
 <body>
 <div id="stage">
+  <div id="credit">♪ 배경 음악: 방탄소년단(BTS) 「소우주(Mikrokosmos)」 · 제작: JINWOO HWANG · 코드 작성에 AI(Claude) 사용 · 2026.11</div>
   <canvas id="scene"></canvas>
   <canvas id="graph"></canvas>
   <div id="bar">
@@ -39,7 +69,7 @@ input[type=range]{accent-color:var(--amber);width:150px}
       <button id="p0"><span class="dot" style="width:5px;height:5px"></span></button>
       <button id="p1"><span class="dot" style="width:11px;height:11px"></span></button>
       <button id="p2"><span class="dot" style="width:20px;height:20px"></span></button>
-      <div class="g"><span>◯</span><input id="kR" type="range" min="0.005" max="0.15" step="0.001" value="0.1"><b id="kV"></b></div>
+      <div class="g"><span>◯</span><input id="kR" type="range" min="0.005" max="0.3" step="0.001" value="0.2"><b id="kV"></b></div>
       <div class="sep"></div>
       <div class="g"><span>∠</span><input id="iR" type="range" min="0" max="90" step="0.1" value="90" style="width:260px"><b id="iV" style="min-width:64px"></b></div>
     </div>
@@ -108,8 +138,8 @@ function start(starImg,planetImg){
   let rot=0,spinRPM=3,Fb=F0;                        // Fb: 지금 자전 각도에서 행성이 없을 때 별의 밝기(기준 100%)
 
   // ---------- 상태 ----------
-  let k=0.1,incl=90,ph=0.18,playing=false,dragging=false,sigma=0,zoomLv=0,speed=0.6;
-  const ranges=[0.016,0.004,0.001,0.00025];
+  let k=0.2,incl=90,ph=0.18,playing=false,dragging=false,sigma=0,zoomLv=0,speed=0.6;
+  const ranges=[0.06,0.016,0.004,0.001,0.00025];
   let data=new Float32Array(NB+1).fill(NaN),curF=1;
   const cosI=()=>Math.cos(incl*Math.PI/180);
   const phi=p=>2*Math.PI*(p-0.5);
@@ -132,7 +162,7 @@ function start(starImg,planetImg){
     c.clearRect(0,0,SW,SH);
     const hide=!g.front&&Math.hypot(g.x,g.y)<1+k;
     const planet=()=>{ // 목성 사진
-      const r=Math.max(pr,0.01);c.drawImage(planetImg,pxs-r,pys-r,2*r,2*r);
+      const r=Math.max(pr,0.01);c.save();c.shadowColor='rgba(255,228,190,.55)';c.shadowBlur=16;c.drawImage(planetImg,pxs-r,pys-r,2*r,2*r);c.restore();
       if(pr<4.5){c.strokeStyle='rgba(94,234,212,.95)';c.lineWidth=1.6;c.beginPath();c.arc(pxs,pys,9,0,6.2832);c.stroke();}
       if(dragging){c.strokeStyle='rgba(255,180,84,.95)';c.lineWidth=2;c.beginPath();c.arc(pxs,pys,Math.max(pr+5,12),0,6.2832);c.stroke();}};
     c.lineWidth=1.4;c.setLineDash([5,7]);
@@ -173,43 +203,36 @@ function start(starImg,planetImg){
   }
   // ---------- 그래프 ----------
   function drawGraph(){
-    const c=gx,L=82,R=GW-18,T=70,B=GH-70,w=R-L,h=B-T,range=ranges[zoomLv],fTop=1+Math.max(range*.06,4.2*sigma),fBot=1-range;
+    const c=gx,L=86,R=GW-26,T=86,B=GH-66,w=R-L,h=B-T,range=ranges[zoomLv],fTop=1+Math.max(range*.06,4.2*sigma),fBot=1-range;
     const Y=f=>T+(fTop-f)/(fTop-fBot)*h,X=p=>L+p*w;
     c.clearRect(0,0,GW,GH);
-    const dec=range>=.004?2:range>=.001?3:4;
-    // 격자
-    for(let i=0;i<=16;i++){const f=1-range*i/8+range*0; }
-    c.font='14px '+FF;
-    const nMaj=8;
+    const INK='rgba(214,218,230,.78)',GRID='rgba(235,228,214,.09)',AX='rgba(235,228,214,.34)',GOLD='#ffd27a',TEAL='#8fe3d4',MONO=getComputedStyle(document.body).getPropertyValue('--mono');
+    const segs=(arr,X,Y)=>{const out=[];let cur=null,last=-9;for(let i=0;i<=NB;i++){const v=arr[i];if(Number.isNaN(v)){cur=null;continue;}if(!cur||i-last>3){cur=[];out.push(cur);}cur.push([X(i/NB),Y(v)]);last=i;}return out;};
+    const halo=(c,x,y)=>{const g=c.createRadialGradient(x,y,0,x,y,20);g.addColorStop(0,'rgba(255,210,122,.55)');g.addColorStop(1,'rgba(233,194,125,0)');c.fillStyle=g;c.beginPath();c.arc(x,y,20,0,6.2832);c.fill();c.fillStyle='#fbf7ee';c.beginPath();c.arc(x,y,5,0,6.2832);c.fill();c.strokeStyle=GOLD;c.lineWidth=2;c.stroke();};
+
+    const dec=range>=.004?2:range>=.001?3:4,nMaj=8;
+    c.font='13px '+FF;
     for(let i=0;i<=nMaj;i++){const f=1-range*i/nMaj,y=Y(f);
-      c.strokeStyle='rgba(255,255,255,.17)';c.lineWidth=1;c.beginPath();c.moveTo(L,y);c.lineTo(R,y);c.stroke();
-      c.fillStyle='rgba(205,218,248,.95)';c.textAlign='right';c.fillText((f*100).toFixed(dec),L-14,y+5);
-      c.strokeStyle='rgba(255,255,255,.5)';c.beginPath();c.moveTo(L-8,y);c.lineTo(L,y);c.stroke();
-      if(i<nMaj){const ym=Y(1-range*(i+.5)/nMaj);c.strokeStyle='rgba(255,255,255,.07)';c.beginPath();c.moveTo(L,ym);c.lineTo(R,ym);c.stroke();
-        c.strokeStyle='rgba(255,255,255,.3)';c.beginPath();c.moveTo(L-4,ym);c.lineTo(L,ym);c.stroke();}}
-    for(let i=0;i<=20;i++){const x=X(i/20);c.strokeStyle=i%5===0?'rgba(255,255,255,.17)':'rgba(255,255,255,.06)';c.beginPath();c.moveTo(x,T);c.lineTo(x,B);c.stroke();}
-    c.fillStyle='rgba(205,218,248,.95)';c.textAlign='center';
-    ['0','0.25','0.5','0.75','1'].forEach((s,i)=>c.fillText(s,X(i/4),B+22));
-    c.textAlign='left';c.fillStyle='rgba(205,218,248,.8)';c.fillText('%',L-34,T-14);
-    c.strokeStyle='rgba(255,255,255,.55)';c.lineWidth=1.4;c.strokeRect(L,T,w,h);
-    // 기준선 100%
-    c.setLineDash([6,5]);c.strokeStyle='rgba(255,180,84,.55)';c.beginPath();c.moveTo(L,Y(1));c.lineTo(R,Y(1));c.stroke();c.setLineDash([]);
-    // 측정점 + 연결선
-    c.save();c.beginPath();c.rect(L,T,w,h);c.clip();
-    c.strokeStyle='rgba(94,234,212,.55)';c.lineWidth=1.6;c.beginPath();let pen=false,last=-9;
-    if(sigma===0)for(let i=0;i<=NB;i++){const v=data[i];if(Number.isNaN(v)){pen=false;continue;}const x=X(i/NB),y=Y(v);if(pen&&i-last<=3)c.lineTo(x,y);else c.moveTo(x,y);pen=true;last=i;}c.stroke();
-    c.fillStyle='#5eead4';
-    for(let i=0;i<=NB;i++){const v=data[i];if(Number.isNaN(v))continue;c.beginPath();c.arc(X(i/NB),Y(v),2.3,0,6.2832);c.fill();}
+      c.strokeStyle=GRID;c.lineWidth=1;c.beginPath();c.moveTo(L,y);c.lineTo(R,y);c.stroke();
+      c.fillStyle=INK;c.textAlign='right';c.fillText((f*100).toFixed(dec),L-12,y+4.5);}
+    ['0','0.25','0.5','0.75','1'].forEach((s,i)=>{const x=X(i/4);c.strokeStyle='rgba(235,228,214,.05)';c.beginPath();c.moveTo(x,T);c.lineTo(x,B);c.stroke();c.fillStyle=INK;c.textAlign='center';c.fillText(s,x,B+24);});
+    c.strokeStyle=AX;c.lineWidth=1;c.beginPath();c.moveTo(L,T-6);c.lineTo(L,B);c.lineTo(R,B);c.stroke();
+    c.textAlign='right';c.fillStyle='rgba(214,218,230,.55)';c.fillText('%',L-12,T-12);
+    c.setLineDash([5,6]);c.strokeStyle='rgba(255,210,122,.7)';c.lineWidth=1;c.beginPath();c.moveTo(L,Y(1));c.lineTo(R,Y(1));c.stroke();c.setLineDash([]);
+    c.save();c.beginPath();c.rect(L,T-4,w+4,h+4);c.clip();
+    if(sigma===0){segs(data,X,Y).forEach(sg=>{if(sg.length<2)return;
+      c.beginPath();c.moveTo(sg[0][0],Y(1));sg.forEach(p=>c.lineTo(p[0],p[1]));c.lineTo(sg[sg.length-1][0],Y(1));c.closePath();
+      const g=c.createLinearGradient(0,Y(1),0,B);g.addColorStop(0,'rgba(125,249,255,.34)');g.addColorStop(1,'rgba(168,85,247,.10)');c.fillStyle=g;c.fill();
+      c.beginPath();sg.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.lineJoin='round';c.strokeStyle=(()=>{const g=c.createLinearGradient(0,Y(1),0,B);g.addColorStop(0,'#7df9ff');g.addColorStop(.6,'#8ab4ff');g.addColorStop(1,'#f472b6');return g;})();c.lineWidth=2.4;c.shadowColor='rgba(138,180,255,.75)';c.shadowBlur=8;c.stroke();c.shadowBlur=0;});}
+    else{c.fillStyle='#a5f3fc';for(let i=0;i<=NB;i++){const v=data[i];if(Number.isNaN(v))continue;c.beginPath();c.arc(X(i/NB),Y(v),1.9,0,6.2832);c.fill();}}
     c.restore();
-    // 커서
     const x=X(ph),y=Y(Math.min(fTop,Math.max(fBot,curF)));
-    c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=1;c.beginPath();c.moveTo(x,T);c.lineTo(x,B);c.stroke();
-    c.fillStyle='#fff';c.beginPath();c.arc(x,y,6.5,0,6.2832);c.fill();c.strokeStyle='#ffb454';c.lineWidth=2.5;c.stroke();
-    // 수치 표시
-    c.textAlign='left';c.fillStyle='#ffb454';c.font='500 34px '+getComputedStyle(document.body).getPropertyValue('--mono');
-    c.fillText((curF*100).toFixed(4),L,40);
-    const ppm=Math.round((1-curF)*1e6);c.font='500 17px '+FF;c.fillStyle='rgba(205,218,248,.9)';c.textAlign='right';
-    c.fillText('−'+ppm.toLocaleString('en-US')+' ppm',R,38);
+    c.strokeStyle='rgba(235,228,214,.22)';c.lineWidth=1;c.beginPath();c.moveTo(x,T);c.lineTo(x,B);c.stroke();
+    halo(c,x,y);
+    c.textAlign='left';c.fillStyle='#fff1d6';c.font='500 34px '+MONO;c.fillText((curF*100).toFixed(4),L,46);
+    c.font='13px '+FF;c.fillStyle='rgba(214,218,230,.55)';c.fillText('%',L+(c.measureText('').width)+170,46);
+    const ppm=Math.round((1-curF)*1e6);c.font='500 16px '+MONO;c.fillStyle=INK;c.textAlign='right';
+    c.fillText('−'+ppm.toLocaleString('en-US')+' ppm',R,44);
   }
   // ---------- 입력 ----------
   function phaseFromPointer(e){
@@ -228,7 +251,7 @@ function start(starImg,planetImg){
   $('#clr').onclick=()=>{data.fill(NaN);};
   const setK=v=>{k=v;$('#kR').value=v;$('#kV').textContent=v.toFixed(3);data.fill(NaN);};
   $('#kR').addEventListener('input',e=>setK(+e.target.value));
-  $('#p0').onclick=()=>setK(.009);$('#p1').onclick=()=>setK(.035);$('#p2').onclick=()=>setK(.1);
+  $('#p0').onclick=()=>setK(.04);$('#p1').onclick=()=>setK(.1);$('#p2').onclick=()=>setK(.2);
   $('#iR').addEventListener('input',e=>{incl=+e.target.value;$('#iV').textContent=incl.toFixed(1)+'°';data.fill(NaN);});
   $('#sR').addEventListener('input',e=>{speed=+e.target.value;$('#sV').textContent='×'+speed.toFixed(2);});
   $('#rR').addEventListener('input',e=>{spinRPM=+e.target.value;$('#rV').textContent=spinRPM?spinRPM.toFixed(1)+'/분':'0';});
@@ -265,6 +288,10 @@ function start(starImg,planetImg){
   vol.addEventListener('input',()=>{muted=false;apply();go();});
   btn.addEventListener('click',()=>{muted=!muted;if(!muted&&+vol.value===0)vol.value=.5;apply();});
 })();
+</script>
+<script>
+(()=>{const rs=[...document.querySelectorAll('input[type=range]')];
+  const upd=()=>{rs.forEach(r=>{const p=(r.value-r.min)/(r.max-r.min)*100;r.style.setProperty('--p',p+'%');});requestAnimationFrame(upd);};upd();})();
 </script>
 </body>
 </html>

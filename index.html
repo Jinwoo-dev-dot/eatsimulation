@@ -141,15 +141,21 @@ function start(starImg,planetImg){
   const PSRC=pSx.getImageData(0,0,PN,PN).data;
   const planetCv=document.createElement('canvas');planetCv.width=planetCv.height=PN;const pOx=planetCv.getContext('2d');const POUT=pOx.createImageData(PN,PN);
   let prot=0;
+  const TILT=-42*Math.PI/180,cT=Math.cos(TILT),sT=Math.sin(TILT);   // 사진 속 구름띠(=적도) 기울기: 자전축은 이 띠에 수직
   function renderPlanet(rot){
     const o=POUT.data,RR=0.93;
-    for(let j=0;j<PN;j++){const v=(j+.5-PCc)/PR/RR,sv=1-v*v;
-      for(let i=0;i<PN;i++){const q=(j*PN+i)*4,u=(i+.5-PCc)/PR/RR,r2=u*u+v*v;
-        if(r2>=1){o[q]=PSRC[q];o[q+1]=PSRC[q+1];o[q+2]=PSRC[q+2];o[q+3]=PSRC[q+3];continue;}
-        const s=Math.sqrt(sv),lam=Math.asin(Math.max(-1,Math.min(1,u/s))),m=(((lam+rot+LL)%(2*LL))+2*LL)%(2*LL),a=m-LL,d=Math.min(m,2*LL-m);
-        const alt=m<EE?a+2*LL:(2*LL-m<EE?a-2*LL:null),wp=alt===null?1:.5+.5*d/EE,w=Math.min(1,(1-Math.sqrt(r2))/0.08);
-        const smp=(l,c)=>{const xs=Math.sin(l)*s*RR*PR+PCc-.5;let x0=Math.floor(xs);const fx=xs-x0;if(x0<0)x0=0;if(x0>PN-2)x0=PN-2;const a0=(j*PN+x0)*4;return PSRC[a0+c]*(1-fx)+PSRC[a0+4+c]*fx;};
-        for(let c=0;c<4;c++){let tv=smp(a,c);if(alt!==null)tv=tv*wp+smp(alt,c)*(1-wp);o[q+c]=tv*w+PSRC[q+c]*(1-w);}}}
+    const smp=(fx0,fy0,c)=>{ // 사진 좌표 (중심 기준 px) 쌍선형 보간
+      let X=fx0+PCc-.5,Y=fy0+PCc-.5;let x0=Math.floor(X),y0=Math.floor(Y);const fx=X-x0,fy=Y-y0;
+      if(x0<0)x0=0;if(x0>PN-2)x0=PN-2;if(y0<0)y0=0;if(y0>PN-2)y0=PN-2;
+      const k=(y0*PN+x0)*4+c;return (PSRC[k]*(1-fx)+PSRC[k+4]*fx)*(1-fy)+(PSRC[k+PN*4]*(1-fx)+PSRC[k+PN*4+4]*fx)*fy;};
+    for(let j=0;j<PN;j++){for(let i=0;i<PN;i++){
+      const q=(j*PN+i)*4,xs0=(i+.5-PCc)/PR,ys0=(j+.5-PCc)/PR;
+      const u=(xs0*cT+ys0*sT)/RR,v=(-xs0*sT+ys0*cT)/RR,r2=u*u+v*v;      // 자전축이 세로가 되도록 좌표를 돌린 값
+      if(r2>=1){o[q]=PSRC[q];o[q+1]=PSRC[q+1];o[q+2]=PSRC[q+2];o[q+3]=PSRC[q+3];continue;}
+      const s=Math.sqrt(1-v*v),lam=Math.asin(Math.max(-1,Math.min(1,u/s))),m=(((lam+rot+LL)%(2*LL))+2*LL)%(2*LL),a=m-LL,d=Math.min(m,2*LL-m);
+      const alt=m<EE?a+2*LL:(2*LL-m<EE?a-2*LL:null),wp=alt===null?1:.5+.5*d/EE,w=Math.min(1,(1-Math.sqrt(r2))/0.08);
+      const at=(l,c)=>{const xv=Math.sin(l)*s*RR*PR,yv=v*RR*PR;return smp(xv*cT-yv*sT,xv*sT+yv*cT,c);};
+      for(let c=0;c<4;c++){let tv=at(a,c);if(alt!==null)tv=tv*wp+at(alt,c)*(1-wp);o[q+c]=tv*w+PSRC[q+c]*(1-w);}}}
     pOx.putImageData(POUT,0,0);
   }
   renderPlanet(0);
